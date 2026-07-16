@@ -1,7 +1,7 @@
 #include<iostream>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
-#include<iphlpapi.h>
+#include<iphlpapi.h> // сокращение от ip help appi
 #pragma comment(lib, "WS2_32.lib")
 using namespace std;
 
@@ -14,6 +14,8 @@ void main()
 	setlocale(LC_ALL,"");
 
 	INT iResult; //переменная которая хранит результаты работы функции
+
+
 	// 0 инициализация winsock
 	WSADATA wsaData;
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
