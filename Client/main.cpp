@@ -56,15 +56,12 @@ void main()
 	
 	//3 Подключ к серверу
 	iResult = connect(connect_socket, target->ai_addr, target->ai_addrlen);
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(connect_socket);
-		connect_socket = INVALID_SOCKET;
-	}
 	freeaddrinfo(target);
 	if (connect_socket == INVALID_SOCKET)
 	{
 		cout << "Unable to connect to server. ERROR: " << WSAGetLastError() << endl;
+		closesocket(connect_socket);
+		freeaddrinfo(target);
 		WSACleanup();
 		return;
 	}

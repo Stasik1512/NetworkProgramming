@@ -34,6 +34,7 @@ void main()
 	if (iResult) // "0" false, true this all what not 0
 	{
 		cout << " getaddrinfo() falied with error:" << endl;
+		cout << "Функция getaddrinfo() завершилась с ошибкой: " << endl;
 		WSACleanup();
 		return;
 	}
@@ -44,6 +45,8 @@ void main()
 	if (listen_socket == INVALID_SOCKET)
 	{
 		cout << "LISTEN SOCKET cretion falied with error" << endl;
+		cout << "Создание LISTEN SOCKET завершилось с ошибкой: " << endl;
+
 		freeaddrinfo(target);
 		WSACleanup();
 		return;
@@ -54,6 +57,7 @@ void main()
 	if (iResult)
 	{
 		cout << "BIND falied with error:" << WSAGetLastError() << endl;
+		cout << "Привязка сокета к порту завершилась с ошибкой" << WSAGetLastError() << endl;
 		closesocket(listen_socket);
 		freeaddrinfo(target);
 		WSACleanup();
@@ -64,6 +68,7 @@ void main()
 	if (listen(listen_socket, 1) == SOCKET_ERROR)
 	{
 		cout << "Listen falied with error: " << WSAGetLastError() << endl;
+		cout << "Прослушивать порт невозможно изза оошибки " << WSAGetLastError() << endl;
 		closesocket(listen_socket);
 		freeaddrinfo(target);
 		WSACleanup();
@@ -76,6 +81,7 @@ void main()
 	if (client_socket == INVALID_SOCKET)
 	{
 		cout << "Accept falied wiht error: " << WSAGetLastError() << endl;
+		cout << "Не удалось принять подключение от сервера" << WSAGetLastError() << endl;
 		closesocket(listen_socket);
 		freeaddrinfo(target);
 		WSACleanup();
@@ -86,11 +92,15 @@ void main()
 	iResult = recv(client_socket, recv_buffer, MTU, NULL);
 	if (iResult > 0)
 	{
-		cout << iResult << "Bytes received.Message: " << recv_buffer << endl;
+		cout << iResult << "Bytes received. Message: " << recv_buffer << endl;
+		
 	}
-	else if (iResult == 0) cout << "Nothing received, connection closing" << endl;
-	else cout << " Recevied failed with error:" << WSAGetLastError() << endl;
-	
+	else if (iResult == 0) cout << "Nothing received, connection closing\n нет данных от клиента, закрываем соединение" << endl;
+	else
+	{
+		cout << "recevied failed with error: " << WSAGetLastError() << endl;
+		cout << "При получении данных возникла ошибка: " << WSAGetLastError() << endl;
+	}
 	//7 Отправка данных клиенту
 	CHAR send_buffer[MTU] = {};
 	sprintf(send_buffer, "Привет Клиент, ваше сообщение: %s", recv_buffer);
@@ -98,6 +108,7 @@ void main()
 	if (iResult == SOCKET_ERROR)
 	{
 		cout << " Send() failed with error: " << WSAGetLastError() << endl;
+		cout << "При отправка данных возникла ошибка" << WSAGetLastError() << endl;
 	}
 
 	cin.get(); //ожидает нажатия клавиши enter;
