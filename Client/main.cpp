@@ -98,7 +98,7 @@ void main()
 	else if (iResult == 0)cout << "Nothing received." << endl;
 	else cout << "Received failed with error: " << WSAGetLastError() << endl << FormatLastError(dwError, szError);
 
-
+	cin.get();
 	// 6 завершаем сеан работы с сервером и освобождаем ресурсы
 	iResult = shutdown(connect_socket, SD_BOTH);
 	dwError = WSAGetLastError();
@@ -110,5 +110,5 @@ void main()
 	//объект wsadata занимает ресурсы памяти, и поэтому,  после того 
 	// как winsock больше не нужен, ти ресурсы нужно освободить
 	WSACleanup();
-
+	
 }

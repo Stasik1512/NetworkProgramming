@@ -34,7 +34,7 @@ void main()
 	hints.ai_flags = AI_PASSIVE; // Соединение работает в режиме "listening"
 
 
-	iResult = getaddrinfo(NULL, "445", &hints, &target); // null - 0.0.0.0 сервер будет прослушивать порт 27015
+	iResult = getaddrinfo(NULL, "27015", &hints, &target); // null - 0.0.0.0 сервер будет прослушивать порт 27015
 	//на всех доступных ip адресах, то есть на всех сетевых картах установленных на компьюторе
 	if (iResult) // "0" false, true this all what not 0
 	{
@@ -85,8 +85,10 @@ void main()
 	}
 
 	//5 принимаем подключение от клиентов
-	SOCKET client_socket = accept(listen_socket, NULL, NULL);
-	
+	sockaddr_in client_address;
+	int client_address_len = sizeof(client_address);
+	SOCKET client_socket = accept(listen_socket, (SOCKADDR*)&client_address, &client_address_len);
+	cout << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port) << std::endl;
 	if (client_socket == INVALID_SOCKET)
 	{
 		cout << FormatLastError(WSAGetLastError(), szError) << endl;
