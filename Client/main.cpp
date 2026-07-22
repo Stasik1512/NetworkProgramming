@@ -1,9 +1,12 @@
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include<Windows.h>
 #include<iostream>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #include<iphlpapi.h> // сокращение от ip help appi
 #include <FormatLastError.h>
-
 #pragma comment(lib, "WS2_32.lib")
 #pragma comment(lib, "FormatLastError.lib")
 using namespace std;
@@ -16,7 +19,6 @@ CHAR* FormatLastError(DWORD dwError, CHAR szError[]);
 
 void main()
 {
-	setlocale(LC_ALL, "");
 
 	INT iResult; //переменная которая хранит результаты работы функции
 	DWORD dwError;
@@ -78,27 +80,37 @@ void main()
 
 	// 4 отправка данных на сервер
 	CHAR send_buffer[MTU] = "Привет Сервер";
-	iResult = send(connect_socket, send_buffer, strlen(send_buffer), 0);
-	dwError = WSAGetLastError();
-	/*if (iResult == SOCKET_ERROR)
+	do
 	{
-		cout << "Send failed with error: " << WSAGetLastError() << endl;
-		cout << FormatLastError(dwError, szError) << endl;
-		closesocket(connect_socket);
-		WSACleanup();
-		return;
-	}*/
-	cout << "Send" << iResult << "Bytes" << endl;
+		iResult = send(connect_socket, send_buffer, strlen(send_buffer), 0);
+		dwError = WSAGetLastError();
+		if (iResult == SOCKET_ERROR)
+		{
+			cout << "Send failed with error: " << WSAGetLastError() << endl;
+			cout << FormatLastError(dwError, szError) << endl;
+			closesocket(connect_socket);
+			WSACleanup();
+			return;
+		}
+		cout << "Send" << iResult << "Bytes" << endl;
 
-	//5 Получение данных от сервера
-	CHAR recv_buffer[MTU] = {};
-	iResult = recv(connect_socket, recv_buffer, MTU, NULL);
-	dwError = WSAGetLastError();
-	if (iResult > 0) cout << iResult << "Byte received. Message: " << recv_buffer << endl;
-	else if (iResult == 0)cout << "Nothing received." << endl;
-	else cout << "Received failed with error: " << WSAGetLastError() << endl << FormatLastError(dwError, szError);
+		//5 Получение данных от сервера
+		CHAR recv_buffer[MTU] = {};
+		iResult = recv(connect_socket, recv_buffer, MTU, NULL);
+		dwError = WSAGetLastError();
+		if (iResult > 0) cout << iResult << "Byte received. Message: " << recv_buffer << endl;
+		else if (iResult == 0)cout << "Nothing received." << endl;
+		else cout << "Received failed with error: " << WSAGetLastError() << endl << FormatLastError(dwError, szError);
 
-	cin.get();
+		ZeroMemory(send_buffer, strlen(send_buffer));
+
+		cout << "Введите сообщение:"; 
+		SetConsoleCP(1251);
+		cin.getline(send_buffer, MTU);
+		SetConsoleCP(866);
+
+	} while (strcmp(send_buffer,"exit"));
+	
 	// 6 завершаем сеан работы с сервером и освобождаем ресурсы
 	iResult = shutdown(connect_socket, SD_BOTH);
 	dwError = WSAGetLastError();
