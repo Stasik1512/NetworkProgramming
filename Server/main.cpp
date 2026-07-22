@@ -120,6 +120,7 @@ void main()
 			cout << FormatLastError(WSAGetLastError(), szError) << endl;
 			cout << "recevied failed with error: " << WSAGetLastError() << endl;
 			cout << "При получении данных возникла ошибка: " << WSAGetLastError() << endl;
+			break;
 		}
 		//7 Отправка данных клиенту
 		sprintf(send_buffer, "Привет Клиент, ваше сообщение: %s", recv_buffer);
@@ -135,6 +136,8 @@ void main()
 	//cin.get(); ожидает нажатия клавиши enter;
 
 	//8 закрываем соедин с клиентом
+	cout << "Press ENTER to close connection" << endl;
+	cin.get();
 	iResult = shutdown(client_socket, SD_BOTH);
 	if (iResult) cout << FormatLastError(WSAGetLastError(),szError) << endl;
 	if (iResult) cout << "shutdown failed with error: " << WSAGetLastError() << endl;
