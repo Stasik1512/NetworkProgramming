@@ -88,7 +88,8 @@ void main()
 	sockaddr_in client_address;
 	int client_address_len = sizeof(client_address);
 	SOCKET client_socket = accept(listen_socket, (SOCKADDR*)&client_address, &client_address_len);
-	cout << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port) << std::endl;
+	cout << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port) << endl;
+
 	if (client_socket == INVALID_SOCKET)
 	{
 		cout << FormatLastError(WSAGetLastError(), szError) << endl;
