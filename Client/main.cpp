@@ -19,7 +19,7 @@ CHAR* FormatLastError(DWORD dwError, CHAR szError[]);
 
 void main()
 {
-
+	setlocale(LC_ALL, "");
 	INT iResult; //переменная которая хранит результаты работы функции
 	DWORD dwError;
 	CHAR szError[256] = {};
