@@ -10,6 +10,14 @@ using namespace std;
 
 #pragma comment(lib,"WS2_32.lib")
 #pragma comment(lib,"FormatLastError.lib")
+
+#define MAX_CONNECTIONS 3
+HANDLE g_hThreads[MAX_CONNECTIONS] = {};
+DWORD g_dwThreadsIDs[MAX_CONNECTIONS] = {};
+SOCKET g_hSockets[MAX_CONNECTIONS] = {};
+
+VOID ClientHandler(SOCKET client_socket);
+
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -22,7 +30,9 @@ void main()
 
 	// 0 »нициализаци€
 	WSADATA wsaData;
+
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
 	//1 ѕараметры подключени€
 	addrinfo hints;
 	addrinfo* target;
@@ -73,7 +83,7 @@ void main()
 	}
 
 	// 4 запускаем прослушивание порта:
-	if (listen(listen_socket, 1) == SOCKET_ERROR)
+	if (listen(listen_socket, MAX_CONNECTIONS) == SOCKET_ERROR)
 	{
 		cout << FormatLastError(WSAGetLastError(), szError) << endl;
 		cout << "Listen falied with error: " << WSAGetLastError() << endl;
@@ -85,21 +95,39 @@ void main()
 	}
 
 	//5 принимаем подключение от клиентов
-	sockaddr_in client_address;
-	int client_address_len = sizeof(client_address);
-	SOCKET client_socket = accept(listen_socket, (SOCKADDR*)&client_address, &client_address_len);
-	cout << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port) << endl;
-
-	if (client_socket == INVALID_SOCKET)
+	do
 	{
-		cout << FormatLastError(WSAGetLastError(), szError) << endl;
-		cout << "Accept falied wiht error: " << WSAGetLastError() << endl;
-		cout << "Ќе удалось прин€ть подключение от сервера" << WSAGetLastError() << endl;
-		closesocket(listen_socket);
-		freeaddrinfo(target);
-		WSACleanup();
-		return;
-	}
+		sockaddr_in client_address;
+		int client_address_len = sizeof(client_address);
+		SOCKET client_socket = accept(listen_socket, (SOCKADDR*)&client_address, &client_address_len);
+		cout << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port) << endl;
+
+		if (client_socket == INVALID_SOCKET)
+		{
+			cout << FormatLastError(WSAGetLastError(), szError) << endl;
+			cout << "Accept falied wiht error: " << WSAGetLastError() << endl;
+			cout << "Ќе удалось прин€ть подключение от сервера" << WSAGetLastError() << endl;
+			closesocket(listen_socket);
+			freeaddrinfo(target);
+			WSACleanup();
+			return;
+		}
+		
+
+		ClientHandler(client_socket);
+	} while (true);
+
+	//9 освободить ресурсы
+	closesocket(listen_socket);
+	freeaddrinfo(target);                  
+	WSACleanup();
+
+}
+VOID ClientHandler(SOCKET client_socket)
+{
+	INT iResult = 0;
+	DWORD dwError = 0;
+	CHAR szError[256] = {};
 	// 6 получение данных от клиента:
 	CHAR recv_buffer[MTU] = {};
 	CHAR send_buffer[MTU] = {};
@@ -137,16 +165,10 @@ void main()
 
 	//8 закрываем соедин с клиентом
 	cout << "Press ENTER to close connection" << endl;
-	cin.get();
+	//cin.get();
 	iResult = shutdown(client_socket, SD_BOTH);
-	if (iResult) cout << FormatLastError(WSAGetLastError(),szError) << endl;
+	if (iResult) cout << FormatLastError(WSAGetLastError(), szError) << endl;
 	if (iResult) cout << "shutdown failed with error: " << WSAGetLastError() << endl;
-	
 
-	//9 освободить ресурсы
 	closesocket(client_socket);
-	closesocket(listen_socket);
-	freeaddrinfo(target);
-	WSACleanup();
-
 }
