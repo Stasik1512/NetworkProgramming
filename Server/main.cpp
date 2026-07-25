@@ -7,7 +7,9 @@
 #include <FormatLastError.h>
 #include <Messages.h>
 #define MTU 1500 
-using namespace std;
+using std::cin;
+using std::cout;
+using std::endl;
 
 #pragma comment(lib,"WS2_32.lib")
 #pragma comment(lib,"FormatLastError.lib")
@@ -148,6 +150,13 @@ void main()
 	WSACleanup();
 
 }
+INT GetClientPosition(DWORD dwID)
+{
+	for (int i = 0; i < MAX_CONNECTIONS; i++)
+	{
+		if (g_dwThreadsIDs[i] == dwID)return i;
+	}
+}
 VOID ClientHandler(SOCKET client_socket)
 {
 	SOCKADDR_IN client_address;
@@ -173,8 +182,9 @@ VOID ClientHandler(SOCKET client_socket)
 		if (iResult > 0)
 		{
 			//cout << iResult << "Bytes received. Message: " << recv_buffer << endl;
-			cout << sz_client_address << recv_buffer <<". (" << iResult<< " Bytes);" << endl;
-
+			cout << sz_client_address << recv_buffer <<". (" << iResult<< " Bytes);";
+			cout << "\tThreadID: " << GetCurrentThreadId() << "\tPosition:" <<	GetClientPosition(GetCurrentThreadId());
+			cout << endl;
 
 		}
 		else if (iResult == 0)
