@@ -15,6 +15,7 @@ using namespace std;
 HANDLE g_hThreads[MAX_CONNECTIONS] = {};
 DWORD g_dwThreadsIDs[MAX_CONNECTIONS] = {};
 SOCKET g_hSockets[MAX_CONNECTIONS] = {};
+INT n = 0;
 
 VOID ClientHandler(SOCKET client_socket);
 
@@ -114,7 +115,17 @@ void main()
 		}
 		
 
-		ClientHandler(client_socket);
+		//ClientHandler(client_socket);
+		g_hSockets[n] = client_socket;
+		g_hThreads[n] = CreateThread
+		(
+			NULL,
+			0,
+			(LPTHREAD_START_ROUTINE)ClientHandler,
+			(LPVOID)g_hSockets[n],
+			NULL,
+			g_dwThreadsIDs+n
+		);
 	} while (true);
 
 	//9 освободить ресурсы
