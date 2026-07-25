@@ -5,6 +5,7 @@
 #include<iphlpapi.h> // сокращение от ip help appi
 
 #include <FormatLastError.h>
+#include <Messages.h>
 #define MTU 1500 
 using namespace std;
 
@@ -101,6 +102,7 @@ void main()
 		sockaddr_in client_address;
 		int client_address_len = sizeof(client_address);
 		SOCKET client_socket = accept(listen_socket, (SOCKADDR*)&client_address, &client_address_len);
+		//cout << "Accept DONE" << endl;
 		cout << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port) << endl;
 
 		if (client_socket == INVALID_SOCKET)
@@ -113,19 +115,31 @@ void main()
 			WSACleanup();
 			return;
 		}
-		
 
-		//ClientHandler(client_socket);
-		g_hSockets[n] = client_socket;
-		g_hThreads[n] = CreateThread
-		(
-			NULL,
-			0,
-			(LPTHREAD_START_ROUTINE)ClientHandler,
-			(LPVOID)g_hSockets[n],
-			NULL,
-			g_dwThreadsIDs+n
-		);
+
+		if (n < MAX_CONNECTIONS)
+		{
+			//ClientHandler(client_socket);
+			g_hSockets[n] = client_socket;
+			g_hThreads[n] = CreateThread
+			(
+				NULL,
+				0,
+				(LPTHREAD_START_ROUTINE)ClientHandler,
+				(LPVOID)g_hSockets[n],
+				NULL,
+				g_dwThreadsIDs + n
+			);
+			n++;
+		}
+		else
+		{
+				iResult= send(client_socket, DECLINE_MESSAGE, strlen(DECLINE_MESSAGE), NULL);
+				if (iResult == SOCKET_ERROR) FormatLastError(WSAGetLastError(), szError);
+				iResult = shutdown(client_socket, SD_BOTH);
+				cout << " - DECLINE" << endl;
+		}
+		
 	} while (true);
 
 	//9 освободить ресурсы
