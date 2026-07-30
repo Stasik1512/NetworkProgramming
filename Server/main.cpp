@@ -1,5 +1,8 @@
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <iostream>
-
+#include <Windows.h>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #include<iphlpapi.h> // сокращение от ip help appi
@@ -20,6 +23,7 @@ DWORD g_dwThreadsIDs[MAX_CONNECTIONS] = {};
 SOCKET g_hSockets[MAX_CONNECTIONS] = {};
 INT n = 0;
 
+VOID ShowActiveClients();
 VOID ClientHandler(SOCKET client_socket);
 
 void main()
@@ -101,6 +105,7 @@ void main()
 	//5 принимаем подключение от клиентов
 	do
 	{
+		ShowActiveClients();
 		sockaddr_in client_address;
 		int client_address_len = sizeof(client_address);
 		SOCKET client_socket = accept(listen_socket, (SOCKADDR*)&client_address, &client_address_len);
@@ -150,6 +155,18 @@ void main()
 	WSACleanup();
 
 }
+VOID ShowActiveClients()
+{
+	Sleep(100);
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO info;
+	GetConsoleScreenBufferInfo(hConsole, &info);
+	SetConsoleCursorPosition(hConsole, COORD{ 25,0 });
+	cout << "\t\t\t\t\t";
+	SetConsoleCursorPosition(hConsole, COORD{ 25,0 });
+	cout << " оличество подлюченных клиентов: " << n;
+	SetConsoleCursorPosition(hConsole, info.dwCursorPosition);
+}
 INT GetClientPosition(DWORD dwID)
 {
 	for (int i = 0; i < MAX_CONNECTIONS; i++)
@@ -185,7 +202,6 @@ VOID ClientHandler(SOCKET client_socket)
 			cout << sz_client_address << recv_buffer <<". (" << iResult<< " Bytes);";
 			cout << "\tThreadID: " << GetCurrentThreadId() << "\tPosition:" <<	GetClientPosition(GetCurrentThreadId());
 			cout << endl;
-
 		}
 		else if (iResult == 0)
 			cout << "Nothing received, connection closing\n нет данных от клиента, закрываем соединение" << endl;
