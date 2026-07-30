@@ -40,7 +40,6 @@ void main()
 	WSADATA wsaData;
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-
 	//1 Параметры подключения
 	addrinfo hints;
 	addrinfo* target;
@@ -252,9 +251,9 @@ VOID ClientHandler(SOCKET client_socket)
 	iResult = shutdown(client_socket, SD_BOTH);
 	if (iResult) cout << FormatLastError(WSAGetLastError(), szError) << endl;
 	if (iResult) cout << "shutdown failed with error: " << WSAGetLastError() << endl;
-	INT index = GetClientPosition((DWORD)GetCurrentThreadId);									//!!!!!!!!!!!!!!!!!!!!!!
+	INT index = GetClientPosition(GetCurrentThreadId());									
 	HANDLE hCurrentThread = g_hThreads[index];
-	closesocket(client_socket);
+	closesocket(client_socket);                   
 	CloseHandle(hCurrentThread);
 	n--;
 	ShowActiveClients();

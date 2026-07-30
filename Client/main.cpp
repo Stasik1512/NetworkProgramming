@@ -3,6 +3,7 @@
 #endif
 #include<Windows.h>
 #include<iostream>
+#include <fstream>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #include<iphlpapi.h> // сокращение от ip help appi
@@ -38,6 +39,19 @@ void main()
 	}
 
 	//1 Задаем параметры подключения:
+	CONST INT IP_SIZE = 16;
+	CHAR sz_server_ip[IP_SIZE];
+	std::ifstream fin("Client.ini");
+	if (fin.is_open())
+	{
+		fin >> sz_server_ip;
+		fin.close();
+	}
+	else
+	{
+		cout << "Error: 'Client.ini'not found" << endl;
+		return;
+	}
 	addrinfo hints;
 	addrinfo* target;
 
@@ -46,7 +60,7 @@ void main()
 	hints.ai_socktype = SOCK_STREAM;	//sock-stream and ipproto_tcp/ip - говорят о том что мы будем подключатся по протоколу tcp
 	hints.ai_protocol = IPPROTO_TCP;
 
-	iResult = getaddrinfo("127.0.0.1", "27015", &hints, &target);
+	iResult = getaddrinfo("192.168.1.110", "27015", &hints, &target);
 
 	if (iResult)
 	{
@@ -109,7 +123,7 @@ void main()
 		cout << "Send" << iResult << "Bytes" << endl;
 
 		//5 Получение данных от сервера
-		Receive(connect_socket);
+		//Receive(connect_socket);
 
 		ZeroMemory(send_buffer, strlen(send_buffer));
 		cout << "Введите сообщение:";
