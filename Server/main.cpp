@@ -18,7 +18,7 @@ using std::endl;
 #pragma comment(lib,"FormatLastError.lib")
 
 #define MAX_CONNECTIONS 3
-HANDLE g_hThreads[MAX_CONNECTIONS +1] = {};
+HANDLE g_hThreads[MAX_CONNECTIONS + 1] = {};
 DWORD g_dwThreadsIDs[MAX_CONNECTIONS + 1] = {};
 SOCKET g_hSockets[MAX_CONNECTIONS + 1] = {};
 INT n = 0;
@@ -141,17 +141,17 @@ void main()
 		}
 		else
 		{
-				iResult= send(client_socket, DECLINE_MESSAGE, strlen(DECLINE_MESSAGE), NULL);
-				if (iResult == SOCKET_ERROR) FormatLastError(WSAGetLastError(), szError);
-				iResult = shutdown(client_socket, SD_BOTH);
-				cout << " - DECLINE" << endl;
+			iResult = send(client_socket, DECLINE_MESSAGE, strlen(DECLINE_MESSAGE), NULL);
+			if (iResult == SOCKET_ERROR) FormatLastError(WSAGetLastError(), szError);
+			iResult = shutdown(client_socket, SD_BOTH);
+			cout << " - DECLINE" << endl;
 		}
-		
+
 	} while (true);
 
 	//9 освободить ресурсы
 	closesocket(listen_socket);
-	freeaddrinfo(target);                  
+	freeaddrinfo(target);
 	WSACleanup();
 
 }
@@ -183,12 +183,29 @@ VOID Shift(INT position)
 		g_dwThreadsIDs[i] = g_dwThreadsIDs[i + 1];
 	}
 }
+VOID Broadcast(CHAR send_buffer[], INT sender_index)
+{
+	CHAR szError[256] = {};
+	for (INT i = 0; i < n; i++)
+	{
+		if (i != sender_index)
+		{
+			INT iResult = send(g_hSockets[i], send_buffer, strlen(send_buffer), NULL);
+			if (iResult == SOCKET_ERROR)
+			{
+				cout << FormatLastError(WSAGetLastError(), szError) << endl;
+				cout << " Send() failed with error: " << WSAGetLastError() << endl;
+				cout << "При отправка данных возникла ошибка" << WSAGetLastError() << endl;
+			}
+		}
+	}
+}
 VOID ClientHandler(SOCKET client_socket)
 {
 	SOCKADDR_IN client_address;
 	client_address.sin_family = AF_INET;
 	INT namelen = sizeof(client_address);
-	getpeername(client_socket, (SOCKADDR*) & client_address, &namelen);
+	getpeername(client_socket, (SOCKADDR*)&client_address, &namelen);
 	CHAR sz_client_address[32] = {};
 	CHAR sz_client_connected[32] = {};
 	sprintf(sz_client_address, "%s:%d  -  ", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
@@ -208,8 +225,8 @@ VOID ClientHandler(SOCKET client_socket)
 		if (iResult > 0)
 		{
 			//cout << iResult << "Bytes received. Message: " << recv_buffer << endl;
-			cout << sz_client_address << recv_buffer <<". (" << iResult<< " Bytes);";
-			cout << "\tThreadID: " << GetCurrentThreadId() << "\tPosition:" <<	GetClientPosition(GetCurrentThreadId());
+			cout << sz_client_address << recv_buffer << ". (" << iResult << " Bytes);";
+			cout << "\tThreadID: " << GetCurrentThreadId() << "\tPosition:" << GetClientPosition(GetCurrentThreadId());
 			cout << endl;
 		}
 		else if (iResult == 0)
@@ -221,15 +238,10 @@ VOID ClientHandler(SOCKET client_socket)
 			cout << "При получении данных возникла ошибка: " << WSAGetLastError() << endl;
 			break;
 		}
-		//7 Отправка данных клиенту
-		sprintf(send_buffer, "Привет Клиент, ваше сообщение: %s", recv_buffer);
-		iResult = send(client_socket, send_buffer, strlen(send_buffer), NULL);
-		if (iResult == SOCKET_ERROR)
-		{
-			cout << FormatLastError(WSAGetLastError(), szError) << endl;
-			cout << " Send() failed with error: " << WSAGetLastError() << endl;
-			cout << "При отправка данных возникла ошибка" << WSAGetLastError() << endl;
-		}
+		////7 Отправка данных клиенту
+		sprintf(send_buffer, "%s - %s\n", sz_client_address, recv_buffer);
+		Broadcast(send_buffer, GetClientPosition(GetCurrentThreadId()));
+		
 	} while (true);
 
 	//cin.get(); ожидает нажатия клавиши enter;
