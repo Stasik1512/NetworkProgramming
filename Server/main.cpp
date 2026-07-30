@@ -218,7 +218,7 @@ VOID ClientHandler(SOCKET client_socket)
 	CHAR recv_buffer[MTU] = {};
 	CHAR send_buffer[MTU] = {};
 	do
-	{
+	{ 
 		ZeroMemory(send_buffer, MTU);
 		ZeroMemory(recv_buffer, MTU);
 		iResult = recv(client_socket, recv_buffer, MTU, NULL);
@@ -239,7 +239,7 @@ VOID ClientHandler(SOCKET client_socket)
 			break;
 		}
 		////7 Отправка данных клиенту
-		sprintf(send_buffer, "%s - %s\n", sz_client_address, recv_buffer);
+		sprintf(send_buffer, "%s%s\n", sz_client_address, recv_buffer);
 		Broadcast(send_buffer, GetClientPosition(GetCurrentThreadId()));
 		
 	} while (true);
@@ -258,4 +258,4 @@ VOID ClientHandler(SOCKET client_socket)
 	CloseHandle(hCurrentThread);
 	n--;
 	ShowActiveClients();
-}
+}         

@@ -10,12 +10,16 @@
 #pragma comment(lib, "WS2_32.lib")
 #pragma comment(lib, "FormatLastError.lib")
 using namespace std;
-
-
 CHAR* FormatLastError(DWORD dwError, CHAR szError[]);
 #define MTU  1500
 // Maximum transfer unit- макс блок данных который можно предать по сети. Для сетей семейства enternet
 //mtu составляеь 1500 byte
+
+
+
+
+BOOL finish = FALSE;
+VOID Receive(SOCKET connect_socket);
 
 void main()
 {
@@ -78,6 +82,16 @@ void main()
 		return;
 	}
 
+	HANDLE hReceiveThread = CreateThread
+	(
+		NULL,
+		0,
+		(LPTHREAD_START_ROUTINE)Receive,
+		(LPVOID)connect_socket,
+		NULL,
+		0
+	);
+
 	// 4 отправка данных на сервер
 	CHAR send_buffer[MTU] = "Hello Server! How are you?";
 	do
@@ -95,22 +109,19 @@ void main()
 		cout << "Send" << iResult << "Bytes" << endl;
 
 		//5 Получение данных от сервера
-		CHAR recv_buffer[MTU] = {};
-		iResult = recv(connect_socket, recv_buffer, MTU, NULL);
-		dwError = WSAGetLastError();
-		if (iResult > 0) cout << iResult << "Byte received. Message: " << recv_buffer << endl;
-		else if (iResult == 0)cout << "Nothing received." << endl;
-		else cout << "Received failed with error: " << WSAGetLastError() << endl << FormatLastError(dwError, szError);
+		Receive(connect_socket);
 
 		ZeroMemory(send_buffer, strlen(send_buffer));
-
-		cout << "Введите сообщение:"; 
+		cout << "Введите сообщение:";
 		SetConsoleCP(1251);
 		cin.getline(send_buffer, MTU);
 		SetConsoleCP(866);
 
-	} while (strcmp(send_buffer,"exit"));
-	
+	} while (strcmp(send_buffer, "exit"));
+	finish = TRUE;
+	WaitForSingleObject(hReceiveThread, INFINITE);
+	CloseHandle(hReceiveThread);
+
 	// 6 завершаем сеан работы с сервером и освобождаем ресурсы
 	iResult = shutdown(connect_socket, SD_BOTH);
 	dwError = WSAGetLastError();
@@ -118,9 +129,28 @@ void main()
 	closesocket(connect_socket);
 	WSACleanup();
 
-
 	//объект wsadata занимает ресурсы памяти, и поэтому,  после того 
 	// как winsock больше не нужен, ти ресурсы нужно освободить
 	WSACleanup();
-	
+
+}
+
+VOID Receive(SOCKET connect_socket)
+{
+	cout << "connect_socket" << connect_socket << endl;
+	//cin.get()
+	DWORD dwError = 0;
+	CHAR szError[256] = {};
+	INT iResult = 0;
+	CHAR recv_buffer[MTU] = {};
+	do 
+	{
+		iResult = recv(connect_socket, recv_buffer, MTU, NULL);
+		dwError = WSAGetLastError();
+		if (iResult > 0) cout << iResult << "Byte received. Message: " << recv_buffer << endl;
+		else if (iResult == 0)cout << "Nothing received." << endl;
+		else cout << "Received failed with error: " << WSAGetLastError() << endl << FormatLastError(dwError, szError);
+		if (WSAGetLastError() == 10053)break;
+	} while (!finish);
+
 }
