@@ -18,9 +18,9 @@ using std::endl;
 #pragma comment(lib,"FormatLastError.lib")
 
 #define MAX_CONNECTIONS 3
-HANDLE g_hThreads[MAX_CONNECTIONS] = {};
-DWORD g_dwThreadsIDs[MAX_CONNECTIONS] = {};
-SOCKET g_hSockets[MAX_CONNECTIONS] = {};
+HANDLE g_hThreads[MAX_CONNECTIONS +1] = {};
+DWORD g_dwThreadsIDs[MAX_CONNECTIONS + 1] = {};
+SOCKET g_hSockets[MAX_CONNECTIONS + 1] = {};
 INT n = 0;
 
 VOID ShowActiveClients();
@@ -174,6 +174,15 @@ INT GetClientPosition(DWORD dwID)
 		if (g_dwThreadsIDs[i] == dwID)return i;
 	}
 }
+VOID Shift(INT position)
+{
+	for (INT i = position; i < MAX_CONNECTIONS; i++)
+	{
+		g_hThreads[i] = g_hThreads[i + 1];
+		g_hSockets[i] = g_hSockets[i + 1];
+		g_dwThreadsIDs[i] = g_dwThreadsIDs[i + 1];
+	}
+}
 VOID ClientHandler(SOCKET client_socket)
 {
 	SOCKADDR_IN client_address;
@@ -231,6 +240,10 @@ VOID ClientHandler(SOCKET client_socket)
 	iResult = shutdown(client_socket, SD_BOTH);
 	if (iResult) cout << FormatLastError(WSAGetLastError(), szError) << endl;
 	if (iResult) cout << "shutdown failed with error: " << WSAGetLastError() << endl;
-
+	INT index = GetClientPosition((DWORD)GetCurrentThreadId);									//!!!!!!!!!!!!!!!!!!!!!!
+	HANDLE hCurrentThread = g_hThreads[index];
 	closesocket(client_socket);
+	CloseHandle(hCurrentThread);
+	n--;
+	ShowActiveClients();
 }
