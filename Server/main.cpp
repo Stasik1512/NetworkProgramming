@@ -15,7 +15,19 @@ using std::cout;
 using std::endl;
 
 #pragma comment(lib,"WS2_32.lib")
+
+
+#ifdef _DEBUG
 #pragma comment(lib,"FormatLastError.lib")
+#endif //_DEBUG
+
+#ifdef NDEBUG
+#ifdef _M_IX86
+#pragma comment(lib, "FormatLastErrorx86.lib")
+#elif _M_X64
+#pragma comment(lib, "FormatLastErrorX64.lib")
+#endif
+#endif //NDEBUG
 
 #define MAX_CONNECTIONS 3
 HANDLE g_hThreads[MAX_CONNECTIONS + 1] = {};

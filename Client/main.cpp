@@ -9,23 +9,26 @@
 #include<iphlpapi.h> // сокращение от ip help appi
 #include <FormatLastError.h>
 #pragma comment(lib, "WS2_32.lib")
+
+
+
 #ifdef _DEBUG
 #pragma comment(lib, "FormatLastError.lib")
 #endif // _DEBUG
+
+#ifdef NDEBUG
+#ifdef _M_IX86
+#pragma comment(lib, "FormatLastErrorx86.lib")
+#elif _M_X64
+#pragma comment(lib, "FormatLastErrorx64.lib")
+#endif WIN32
+#endif // NDEBUG
+
 using namespace std;
 CHAR* FormatLastError(DWORD dwError, CHAR szError[]);
 #define MTU  1500
 // Maximum transfer unit- макс блок данных который можно предать по сети. Для сетей семейства enternet
 //mtu составляеь 1500 byte
-
-//#ifdef NDEBUG
-#ifdef WIN32
-#pragma comment(lib, "FormatLastErrorx86.lib")
-#elif
-#pragma comment(lib, "FormatLastErrorx64.lib")
-#endif WIN32
-//#endif // NDEBUG
-
 
 
 BOOL finish = FALSE;
@@ -69,7 +72,7 @@ void main()
 	hints.ai_socktype = SOCK_STREAM;	//sock-stream and ipproto_tcp/ip - говорят о том что мы будем подключатся по протоколу tcp
 	hints.ai_protocol = IPPROTO_TCP;
 
-	iResult = getaddrinfo("192.168.1.110", "27015", &hints, &target);
+	iResult = getaddrinfo(sz_server_ip, "27015", &hints, &target);
 
 	if (iResult)
 	{
