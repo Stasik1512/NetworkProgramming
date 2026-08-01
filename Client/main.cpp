@@ -19,7 +19,7 @@
 #ifdef NDEBUG
 #ifdef _M_IX86
 #pragma comment(lib, "FormatLastErrorx86.lib")
-#elif _M_X64
+#elif _M_X6œ¿Ã≈¿¿¿¿œ4
 #pragma comment(lib, "FormatLastErrorx64.lib")
 #endif WIN32
 #endif // NDEBUG

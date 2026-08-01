@@ -24,8 +24,16 @@ void Minus()
 		ReleaseMutex(g_hMutex);
 	}
 }
+
+//	#define - определить
+//	#definition - определение
+//	Директива #define создает макроопределение (макрос)
+#define WINDOWS_THREADS
 void main()
 {
+#if defined WINDOWS_THREADS
+	//ЕСЛИ определено WINDOWS_THREADS, то нижеследующий код будет виден компилятору, 
+	// до диективы #endif
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 	//Plus();
@@ -56,4 +64,6 @@ void main()
 	CloseHandle(hThreads[0]);
 	CloseHandle(hThreads[1]);
 	CloseHandle(g_hMutex);
+#endif // WINDOWS_THREADS
+
 }
